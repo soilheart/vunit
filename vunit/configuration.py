@@ -158,7 +158,17 @@ class Configuration(object):  # pylint: disable=too-many-instance-attributes
             if argname not in args:
                 del kwargs[argname]
 
-        return self.pre_config(**kwargs) is True
+        result = self.pre_config(**kwargs)
+
+        if not result is True:
+            LOGGER.warning(
+                'pre_config "%s" for "%s" failed with result %s.',
+                self.pre_config.__name__,
+                self._design_unit.name,
+                result,
+            )
+
+        return result is True
 
     def call_post_check(self, output_path, read_output):
         """
