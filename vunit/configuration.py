@@ -9,6 +9,8 @@ Contains Configuration class which contains configuration of a test run
 """
 
 import logging
+import ast
+import textwrap
 import inspect
 from pathlib import Path
 from copy import copy
@@ -157,6 +159,16 @@ class Configuration(object):  # pylint: disable=too-many-instance-attributes
         for argname in list(kwargs.keys()):
             if argname not in args:
                 del kwargs[argname]
+
+        if not any(
+            isinstance(node, ast.Return)
+            for node in ast.walk(
+                ast.parse(textwrap.dedent(inspect.getsource(self.pre_config)))
+            )
+        ):
+            LOGGER.error(
+                'Found no return statement in function "%s"', self.pre_config.__name__
+            )
 
         result = self.pre_config(**kwargs)
 
